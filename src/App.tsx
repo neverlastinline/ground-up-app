@@ -98,7 +98,7 @@ function AppInner() {
         </div>
 
         <div key={mode} style={{ display: "contents" }}>
-          {screen === "dashboard" && <Dashboard onNavigate={(s) => { setHighlightedStepN(null); setScreen(s); }} onJumpToCheckpoint={() => setScreen("checkpoint")} highlightedStepN={highlightedStepN} />}
+          {screen === "dashboard" && <Dashboard onNavigate={(s) => { setHighlightedStepN(null); setScreen(s); }} onJumpToCheckpoint={() => setScreen("checkpoint")} highlightedStepN={highlightedStepN} onSelectStep={setHighlightedStepN} />}
           {screen === "lesson" && <Lesson onNavigate={setScreen} />}
           {screen === "checkpoint" && <Checkpoint onNavigate={setScreen} onPassed={() => setScreen("passed")} />}
           {screen === "portfolio" && <Portfolio onNavigate={setScreen} />}

@@ -12,15 +12,24 @@ export function Dashboard({
   onNavigate,
   onJumpToCheckpoint,
   highlightedStepN,
+  onSelectStep,
 }: {
   onNavigate: (s: Screen) => void;
   onJumpToCheckpoint: () => void;
   highlightedStepN?: number | null;
+  onSelectStep?: (n: number) => void;
 }) {
   const { steps, today, streak, heatmap, projects } = useProgress();
 
   const currentStep = steps.find((s) => s.state === "current");
   if (!currentStep) return null;
+
+  // If the user clicked a passed step, show its details instead of the hero.
+  const selectedStep = highlightedStepN
+    ? (steps.find((s) => s.n === highlightedStepN) ?? currentStep)
+    : currentStep;
+  const isViewingPast = selectedStep.state === "passed";
+
   const passedCount = steps.filter((s) => s.state === "passed").length;
   const totalCommits = projects.reduce((acc, p) => acc + (p.commits || 0), 0);
   const heatmapAny = heatmap.some((h) => h > 0);
@@ -36,31 +45,76 @@ export function Dashboard({
 
   return (
     <div className="screen content">
-      {/* HERO BANNER */}
+      {/* HERO BANNER — shows selected (past) step or current step */}
       <div className="row between" style={{ alignItems: "flex-end", marginBottom: 28 }}>
         <div>
-          <div className="eyebrow">
-            Currently · Step {currentStep.n} of {totalSteps}
+          <div className="row center gap-3">
+            <div className="eyebrow">
+              {isViewingPast ? `Reviewing · Step ${selectedStep.n} of ${totalSteps}` : `Currently · Step ${currentStep.n} of ${totalSteps}`}
+            </div>
+            {isViewingPast && (
+              <button
+                className="btn btn--ghost btn--sm"
+                onClick={() => onSelectStep?.(currentStep.n)}
+                style={{ fontSize: 11 }}
+              >
+                ← Back to current step
+              </button>
+            )}
           </div>
           <h1 className="h-display mt-3" style={{ maxWidth: 720 }}>
-            {currentStep.name},<br />
-            <em>{weekLine}</em>
+            {selectedStep.name},<br />
+            <em>{isViewingPast ? `${selectedStep.weeks.toLowerCase()}.` : weekLine}</em>
           </h1>
           <div className="muted mt-3" style={{ fontSize: 15, maxWidth: 560 }}>
-            {currentStep.summary}
+            {selectedStep.summary}
           </div>
         </div>
         <div className="col" style={{ alignItems: "flex-end", gap: 8 }}>
-          <span className="badge badge--blue">{isStartingStep ? "Just started" : "In progress"}</span>
+          {isViewingPast ? (
+            <span className="badge badge--green"><Check size={9} color="#1F7A4D" /> passed</span>
+          ) : (
+            <span className="badge badge--blue">{isStartingStep ? "Just started" : "In progress"}</span>
+          )}
           <div className="mono fz-12 muted">{today.date}</div>
           <div className="row center gap-3 mt-2">
-            <span className="dot dot-blue" />
-            <span className="mono fz-11 muted upper">{isStartingStep ? "Welcome · Day 1" : "All systems · synced"}</span>
+            <span className={isViewingPast ? "dot" : "dot dot-blue"} style={isViewingPast ? { background: "var(--green)" } : {}} />
+            <span className="mono fz-11 muted upper">{isViewingPast ? `Step ${selectedStep.n} complete` : isStartingStep ? "Welcome · Day 1" : "All systems · synced"}</span>
           </div>
         </div>
       </div>
 
       <hr className="hr-ink mb-6" />
+
+      {/* PAST STEP DETAIL PANEL — replaces today's focus when reviewing a passed step */}
+      {isViewingPast && (
+        <div className="card p-6 mb-6" style={{ borderColor: "var(--green)", background: "var(--surface-alt)" }}>
+          <div className="row between center mb-4">
+            <div className="eyebrow" style={{ color: "var(--green)" }}>Checkpoint passed</div>
+            <span className="mono fz-11 muted">{selectedStep.checkpoint}</span>
+          </div>
+          <div className="col gap-2 mb-5">
+            {(selectedStep.checkpointCriteria ?? []).map((c) => (
+              <div key={c.id} className="row center gap-3">
+                <Check size={11} color="#1F7A4D" />
+                <span className="ink fz-13">{c.text}</span>
+              </div>
+            ))}
+          </div>
+          <hr className="hr-dash mb-4" />
+          <div className="eyebrow mb-3">Resources used in this step</div>
+          <div className="row gap-3 wrap">
+            {selectedStep.resources.map((r) => (
+              <span key={r.name} className="badge">{r.name}</span>
+            ))}
+          </div>
+          <div className="mt-5">
+            <button className="btn btn--sm" onClick={() => onSelectStep?.(currentStep.n)}>
+              Back to Step {currentStep.n} — {currentStep.name} <ArrowRight size={11} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MAIN GRID */}
       <div style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: 24 }}>
@@ -265,7 +319,7 @@ export function Dashboard({
           </div>
         </div>
         <hr className="hr-ink mb-5" />
-        <StepTrack steps={steps} today={today} highlightedStepN={highlightedStepN} />
+        <StepTrack steps={steps} today={today} highlightedStepN={highlightedStepN} onSelectStep={onSelectStep} />
       </div>
 
       {/* QUICK ACCESS */}
@@ -363,7 +417,7 @@ function QuickCard({
 }
 
 /* horizontal 7-step track */
-function StepTrack({ steps, today, highlightedStepN }: { steps: Step[]; today: { week: number | string }; highlightedStepN?: number | null }) {
+function StepTrack({ steps, today, highlightedStepN, onSelectStep }: { steps: Step[]; today: { week: number | string }; highlightedStepN?: number | null; onSelectStep?: (n: number) => void }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 12 }}>
       {steps.map((s) => {
@@ -393,6 +447,7 @@ function StepTrack({ steps, today, highlightedStepN }: { steps: Step[]; today: {
         return (
           <div
             key={s.n}
+            onClick={() => !isLocked && onSelectStep?.(s.n)}
             style={{
               background: isCurrent ? "var(--surface)" : isPassed ? "var(--surface-alt)" : "transparent",
               border: "2px solid " + (isHighlighted ? "var(--blue)" : isCurrent ? "var(--ink)" : "var(--line)"),
