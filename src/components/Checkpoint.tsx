@@ -257,7 +257,7 @@ function FailPanel({
 const REVISIT: Record<number, Record<string, { where: string; url: string }>> = {
   1: {
     f1: { where: "python.org · code.visualstudio.com · obsidian.md · ollama.com", url: "https://python.org" },
-    f2: { where: "anthropic.com/learn · openai.com · coursera.org", url: "https://anthropic.com/learn" },
+    f2: { where: "anthropic.com/learn · openai.com", url: "https://anthropic.com/learn" },
     f3: { where: "obsidian.md · vault structure docs", url: "https://help.obsidian.md" },
     f4: { where: "github.com · new repository", url: "https://github.com/new" },
   },

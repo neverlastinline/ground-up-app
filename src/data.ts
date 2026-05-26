@@ -153,11 +153,10 @@ const STEPS_BASE: StepBase[] = [
     weeks: "Weeks 1–2",
     weekRange: [1, 2],
     summary: "Vocabulary, the 4D model, and your first Jupyter notebooks.",
-    primary: "Google AI Cert · Anthropic Fluency · microsoft/generative-ai-for-beginners",
+    primary: "Anthropic Fluency · microsoft/generative-ai-for-beginners",
     checkpoint: "Explain LLMs, tokens, and transformers in your own words.",
     resources: [
       { name: "microsoft/generative-ai-for-beginners", repo: "github/microsoft", stars: "78.4k", type: "repo" },
-      { name: "Google AI Professional Certificate",    repo: "coursera",         stars: null,    type: "course" },
       { name: "AI Fluency Framework",                  repo: "anthropic.com",    stars: null,    type: "course" },
     ],
   },
@@ -167,12 +166,12 @@ const STEPS_BASE: StepBase[] = [
     weeks: "Weeks 3–5",
     weekRange: [3, 5],
     summary: "Regression, classification, clustering. Your first model on GitHub.",
-    primary: "microsoft/ML-For-Beginners · IBM ML (audit) · mlabonne/llm-course",
+    primary: "microsoft/ML-For-Beginners · mlabonne/llm-course · fast.ai",
     checkpoint: "You understand gradient descent, loss, overfitting. One project shipped.",
     resources: [
       { name: "microsoft/ML-For-Beginners", repo: "github/microsoft", stars: "73.2k", type: "repo" },
-      { name: "IBM Machine Learning",       repo: "coursera",         stars: null,    type: "course" },
       { name: "mlabonne/llm-course",        repo: "github/mlabonne",  stars: "47.1k", type: "repo" },
+      { name: "fast.ai — Practical Deep Learning", repo: "fast.ai",   stars: null,    type: "course" },
     ],
   },
   {
@@ -376,7 +375,7 @@ function freshData(): ProgressData {
       if (s.n === 1) {
         out.checkpointCriteria = [
           { id: "f1", text: "Python 3.11+, VS Code, Git, Obsidian and Ollama are installed locally.",   done: false },
-          { id: "f2", text: "I created accounts on Anthropic Academy, OpenAI Academy, Google AI and IBM ML.", done: false },
+          { id: "f2", text: "I created accounts on Anthropic Academy and OpenAI Academy.", done: false },
           { id: "f3", text: "My Obsidian AI-Learning vault exists with /sessions, /concepts, /projects.",      done: false },
           { id: "f4", text: "I pushed an initial commit to a public GitHub repo named ground-up.",             done: false },
         ];
@@ -390,14 +389,14 @@ function freshData(): ProgressData {
       source: "Step 1 · Environment Setup",
       url: "https://obsidian.md",
       duration: "~55 min",
-      expected: "Install Python, VS Code, Obsidian and Ollama. Create the four academy accounts. Initialise your vault and push an empty repo to GitHub. Don't open a lecture yet — Step 2 starts tomorrow.",
+      expected: "Install Python, VS Code, Obsidian and Ollama. Create your Anthropic Academy and OpenAI Academy accounts. Initialise your vault and push an empty repo to GitHub. Don't open a lecture yet — Step 2 starts tomorrow.",
       nextUp: "Tomorrow · Step 2 — Anthropic AI Fluency, Module 1.",
       dayLabel: "Day 1 of 1 in Step 1",
       dayProgress: [1, 1],
       sessionNumber: 1,
       tasks: [
         "Install the local stack: Python 3.11+, VS Code with the Python extension, Git, Obsidian, Ollama. Don't skim — make sure `python --version` and `ollama --version` both print something in your terminal.",
-        "Create four free accounts: Anthropic Academy, OpenAI Academy, Google AI (via Coursera), IBM Machine Learning on Coursera (audit mode = free). Bookmark each.",
+        "Create two free accounts: Anthropic Academy and OpenAI Academy. Bookmark each.",
         "Open Obsidian and scaffold the AI-Learning folder structure (see the panel below). Copy the one-line terminal command if you want it done in five seconds, or download the ready-made zip and drag it into your vault. Either way: you should see AI-Learning/ in your file explorer before bed.",
         "Create a public GitHub repo called ground-up. Push an empty README that says one sentence about why you're doing this. That's your first commit.",
       ],
