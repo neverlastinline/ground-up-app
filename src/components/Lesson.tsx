@@ -5,12 +5,14 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import JSZip from "jszip";
 import { useProgress } from "../progress";
+import { useObsidianVault } from "../hooks/useObsidianVault";
 import { ArrowRight, Bar, Checkbox, ExternalLink, Star, openLink } from "../primitives";
 import type { Resource, VaultScaffold as VaultScaffoldData } from "../data";
 import type { Screen } from "../App";
 
-export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
+export function Lesson({ onNavigate, onObsidianSync }: { onNavigate: (s: Screen) => void; onObsidianSync?: () => void }) {
   const { steps, today, streak } = useProgress();
+  const { isConfigured, openNote, sessionNotePath, buildSessionNote } = useObsidianVault();
   const step = steps.find((s) => s.state === "current");
 
   const [note, setNote] = useState(today.noteTemplate || "");
@@ -195,7 +197,18 @@ export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
               </span>
             </div>
             <div className="row gap-2">
-              <button className="btn btn--ghost btn--sm">View in Obsidian</button>
+              <button
+                className="btn btn--ghost btn--sm"
+                title={isConfigured ? "Open this session note in Obsidian" : "Configure Obsidian vault first"}
+                onClick={() => {
+                  if (!isConfigured) { onObsidianSync?.(); return; }
+                  const isoDate = new Date().toISOString().split("T")[0];
+                  const content = buildSessionNote(step.n, step.name, isoDate, today.sessionNumber, note || today.noteTemplate);
+                  openNote(sessionNotePath(isoDate), content);
+                }}
+              >
+                {isConfigured ? "Open in Obsidian" : "Connect Obsidian"} <ExternalLink size={10} />
+              </button>
               {allDone && nextStep ? (
                 <button
                   className="btn btn--sm btn--green"

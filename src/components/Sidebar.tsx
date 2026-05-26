@@ -2,6 +2,7 @@
 
 import { useProgress } from "../progress";
 import { Check, Lock } from "../primitives";
+import { useObsidianVault } from "../hooks/useObsidianVault";
 import type { Step } from "../data";
 import type { Screen } from "../App";
 
@@ -17,12 +18,15 @@ export function Sidebar({
   onNavigate,
   onJumpToStep,
   screen,
+  onObsidianSync,
 }: {
   onNavigate: (s: Screen) => void;
   onJumpToStep: (n: number) => void;
   screen: Screen;
+  onObsidianSync?: () => void;
 }) {
   const { steps, persona } = useProgress();
+  const { isConfigured, vaultName } = useObsidianVault();
 
   return (
     <aside className="sidebar">
@@ -80,7 +84,12 @@ export function Sidebar({
         />
         <SidebarLink label="Portfolio" active={screen === "portfolio"} onClick={() => onNavigate("portfolio")} />
         <SidebarLink label="Resource library" onClick={() => {}} muted />
-        <SidebarLink label="Obsidian sync" onClick={() => {}} muted suffix="connected" />
+        <SidebarLink
+          label="Obsidian sync"
+          onClick={() => onObsidianSync?.()}
+          suffix={isConfigured ? vaultName : "configure"}
+          muted={!isConfigured}
+        />
       </div>
 
       <div className="sidebar-foot">
