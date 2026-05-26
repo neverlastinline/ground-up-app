@@ -22,12 +22,27 @@ A 14-week AI skills learning platform. Built as a design-to-code implementation 
 
 ## Getting started
 
+**Prerequisites** — check these first:
+
 ```bash
+node -v   # needs v18 or later
+git --version
+```
+
+If either command isn't found, install them first:
+- [Node.js](https://nodejs.org/) (includes npm) — download the LTS version
+- [Git](https://git-scm.com/downloads)
+
+**Install and run:**
+
+```bash
+git clone https://github.com/neverlastinline/ground-up-app.git
+cd ground-up-app
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Then open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Other commands
 
