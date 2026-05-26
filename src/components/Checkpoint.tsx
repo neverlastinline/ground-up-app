@@ -2,7 +2,7 @@
 // the current step's data. Criteria live in the progress context, so ticking
 // one keeps the Sidebar badge and Dashboard preview in sync.
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useProgress } from "../progress";
 import { ArrowRight, ExternalLink, openLink, Checkbox } from "../primitives";
 import type { CheckpointCriterion } from "../data";
@@ -10,18 +10,24 @@ import type { Screen } from "../App";
 
 export function Checkpoint({ onNavigate, onPassed }: { onNavigate: (s: Screen) => void; onPassed: () => void }) {
   const { steps, toggleCriterion } = useProgress();
-  const step = steps.find((s) => s.state === "current")!;
-  const criteria = step.checkpointCriteria || [];
+  const step = steps.find((s) => s.state === "current");
+  const criteria = step?.checkpointCriteria || [];
   const [passing, setPassing] = useState(false);
+  // Store the timer so we can cancel it if the component unmounts mid-animation
+  // (e.g. user toggles mode while the pass animation is running).
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   const allDone = criteria.length > 0 && criteria.every((c) => c.done);
   const count = criteria.filter((c) => c.done).length;
 
   const handleAttempt = () => {
-    if (!allDone) return;
+    if (!allDone || passing) return;
     setPassing(true);
-    setTimeout(() => onPassed(), 1400);
+    timerRef.current = setTimeout(() => onPassed(), 1400);
   };
+
+  if (!step) return null;
 
   return (
     <div className="screen content">
@@ -54,7 +60,20 @@ export function Checkpoint({ onNavigate, onPassed }: { onNavigate: (s: Screen) =
 
       <hr className="hr-ink" />
 
-      {/* CRITERIA */}
+      {/* CRITERIA — or a holding state if none are configured yet */}
+      {criteria.length === 0 && (
+        <div className="card card--paper p-6 mt-8" style={{ maxWidth: 860 }}>
+          <div className="eyebrow mb-3">Criteria not yet configured</div>
+          <div className="serif" style={{ fontSize: 17, color: "var(--ink)", lineHeight: 1.4 }}>
+            Checkpoint criteria for Step {step.n} haven't been added yet. Head back to the lesson and keep working — this
+            gate will be ready before you need it.
+          </div>
+          <button className="btn btn--ghost btn--sm mt-5" onClick={() => onNavigate("lesson")}>
+            ← Back to today's session
+          </button>
+        </div>
+      )}
+
       <div className="mt-8" style={{ maxWidth: 860 }}>
         <div className="eyebrow mb-4">Pass criteria</div>
         <div className="col gap-3">

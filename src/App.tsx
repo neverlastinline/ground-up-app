@@ -27,6 +27,8 @@ export default function App() {
 function AppInner() {
   const { mode, setMode, steps, streak, persona } = useProgress();
   const [screen, setScreen] = useState<Screen>("landing");
+  // Tracks which step was clicked in the sidebar so Dashboard can highlight it.
+  const [highlightedStepN, setHighlightedStepN] = useState<number | null>(null);
 
   const currentStepN = steps.find((s) => s.state === "current")?.n ?? 1;
 
@@ -41,6 +43,7 @@ function AppInner() {
   const onJumpToStep = (n: number) => {
     const s = steps.find((st) => st.n === n);
     if (!s || s.state === "locked") return;
+    setHighlightedStepN(n);
     setScreen("dashboard");
   };
 
@@ -95,7 +98,7 @@ function AppInner() {
         </div>
 
         <div key={mode} style={{ display: "contents" }}>
-          {screen === "dashboard" && <Dashboard onNavigate={setScreen} onJumpToCheckpoint={() => setScreen("checkpoint")} />}
+          {screen === "dashboard" && <Dashboard onNavigate={(s) => { setHighlightedStepN(null); setScreen(s); }} onJumpToCheckpoint={() => setScreen("checkpoint")} highlightedStepN={highlightedStepN} />}
           {screen === "lesson" && <Lesson onNavigate={setScreen} />}
           {screen === "checkpoint" && <Checkpoint onNavigate={setScreen} onPassed={() => setScreen("passed")} />}
           {screen === "portfolio" && <Portfolio onNavigate={setScreen} />}

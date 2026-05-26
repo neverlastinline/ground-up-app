@@ -11,13 +11,16 @@ const NUM_WORDS = ["One", "Two", "Three", "Four", "Five", "Six", "Seven"];
 export function Dashboard({
   onNavigate,
   onJumpToCheckpoint,
+  highlightedStepN,
 }: {
   onNavigate: (s: Screen) => void;
   onJumpToCheckpoint: () => void;
+  highlightedStepN?: number | null;
 }) {
   const { steps, today, streak, heatmap, projects } = useProgress();
 
-  const currentStep = steps.find((s) => s.state === "current")!;
+  const currentStep = steps.find((s) => s.state === "current");
+  if (!currentStep) return null;
   const passedCount = steps.filter((s) => s.state === "passed").length;
   const totalCommits = projects.reduce((acc, p) => acc + (p.commits || 0), 0);
   const heatmapAny = heatmap.some((h) => h > 0);
@@ -75,12 +78,12 @@ export function Dashboard({
             <a href="#" className="link" onClick={(e) => { e.preventDefault(); openLink(today.url); }}>
               {today.source}
             </a>
-            {!isStartingStep && (
+            {!isStartingStep && today.lectureLabel && (
               <>
                 <span className="muted" style={{ margin: "0 8px" }}>
                   ·
                 </span>
-                Lecture 4 of 7
+                {today.lectureLabel}
               </>
             )}
           </div>
@@ -214,7 +217,7 @@ export function Dashboard({
             <div className="serif mt-2 ink" style={{ fontSize: 22, fontWeight: 400 }}>
               {heatmapAny ? (
                 <>
-                  <span className="num">{totalCommits || 198}</span> commits,{" "}
+                  <span className="num">{totalCommits}</span> commits,{" "}
                   <span className="num">{passedCount > 0 ? 52 : 1}</span> {passedCount > 0 ? "weeks" : "day"}. Shipping
                   beats studying.
                 </>
@@ -262,7 +265,7 @@ export function Dashboard({
           </div>
         </div>
         <hr className="hr-ink mb-5" />
-        <StepTrack steps={steps} today={today} />
+        <StepTrack steps={steps} today={today} highlightedStepN={highlightedStepN} />
       </div>
 
       {/* QUICK ACCESS */}
@@ -360,7 +363,7 @@ function QuickCard({
 }
 
 /* horizontal 7-step track */
-function StepTrack({ steps, today }: { steps: Step[]; today: { week: number | string } }) {
+function StepTrack({ steps, today, highlightedStepN }: { steps: Step[]; today: { week: number | string }; highlightedStepN?: number | null }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 12 }}>
       {steps.map((s) => {
@@ -386,17 +389,19 @@ function StepTrack({ steps, today }: { steps: Step[]; today: { week: number | st
           }
         }
 
+        const isHighlighted = highlightedStepN === s.n;
         return (
           <div
             key={s.n}
             style={{
               background: isCurrent ? "var(--surface)" : isPassed ? "var(--surface-alt)" : "transparent",
-              border: "1px solid " + (isCurrent ? "var(--ink)" : "var(--line)"),
+              border: "2px solid " + (isHighlighted ? "var(--blue)" : isCurrent ? "var(--ink)" : "var(--line)"),
               borderRadius: 2,
               padding: "14px 14px 16px",
               position: "relative",
               cursor: isLocked ? "default" : "pointer",
               opacity: isLocked ? 0.55 : 1,
+              transition: "border-color 200ms",
             }}
           >
             <div className="row between center">

@@ -11,7 +11,7 @@ import type { Screen } from "../App";
 
 export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const { steps, today, streak } = useProgress();
-  const step = steps.find((s) => s.state === "current")!;
+  const step = steps.find((s) => s.state === "current");
 
   const [note, setNote] = useState(today.noteTemplate || "");
   const [saved, setSaved] = useState(true);
@@ -21,12 +21,12 @@ export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const [checks, setChecks] = useState<boolean[]>(() => (today.tasks || []).map(() => false));
   const toggleCheck = (i: number) => setChecks((cs) => cs.map((c, idx) => (idx === i ? !c : c)));
 
-  // re-init when mode flips (today changes)
+  // re-init whenever today changes (mode switch or taskTitle update)
   useEffect(() => {
     setNote(today.noteTemplate || "");
     setSaved(true);
     setChecks((today.tasks || []).map(() => false));
-  }, [today.taskTitle]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [today.taskTitle, today.noteTemplate, today.tasks]);
 
   useEffect(() => {
     if (!saved) {
@@ -44,6 +44,8 @@ export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const doneCount = checks.filter(Boolean).length;
   const totalTasks = checks.length;
   const allDone = totalTasks > 0 && doneCount === totalTasks;
+
+  if (!step) return null;
 
   const [dayN, dayMax] = today.dayProgress || [1, 1];
   const isStartingStep = step.weekRange[0] === 0 && step.weekRange[1] === 0;
@@ -63,7 +65,7 @@ export function Lesson({ onNavigate }: { onNavigate: (s: Screen) => void }) {
               <span className="sep">/</span>
               <span>{isStartingStep ? "Day 1" : `Week ${today.week}`}</span>
               <span className="sep">/</span>
-              <span className="cur">Session · {isStartingStep ? "tonight" : "Lecture 4"}</span>
+              <span className="cur">Session · {isStartingStep ? "tonight" : (today.lectureLabel ?? "today")}</span>
             </div>
           </div>
           <div className="row center gap-5">

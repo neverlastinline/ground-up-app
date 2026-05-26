@@ -14,7 +14,7 @@ interface Writeup {
   isDraft?: boolean;
 }
 
-export function Portfolio(_props: { onNavigate: (s: Screen) => void }) {
+export function Portfolio({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const { steps, streak, projects, skills, persona } = useProgress();
 
   const passedCount = steps.filter((s) => s.state === "passed").length;
@@ -37,6 +37,9 @@ export function Portfolio(_props: { onNavigate: (s: Screen) => void }) {
     <div className="screen content">
       <div className="row between" style={{ alignItems: "flex-end", marginBottom: 28 }}>
         <div>
+          <button className="btn btn--ghost btn--sm mb-4" onClick={() => onNavigate("dashboard")}>
+            ← Dashboard
+          </button>
           <div className="eyebrow">Portfolio · ground up</div>
           <h1 className="h-display mt-3" style={{ maxWidth: 760 }}>
             {isFresh ? (

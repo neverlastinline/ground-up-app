@@ -81,6 +81,9 @@ export interface Today {
   noteTemplate: string;
   pastNotes: PastNote[];
   vaultScaffold?: VaultScaffold;
+  /** Short label for the current lecture slot, e.g. "Lecture 4 of 7".
+   *  Only set when the session maps to a numbered lecture series. */
+  lectureLabel?: string;
 }
 
 export interface Streak {
@@ -306,6 +309,7 @@ function demoData(): ProgressData {
       duration: "~2h 10m",
       expected: "Implement BatchNorm forward + backward by hand in micrograd. Note when it stabilises training and when it actively hurts.",
       nextUp: "Lecture 5 — building makemore Part 4. Tomorrow.",
+      lectureLabel: "Lecture 4 of 7",
       dayLabel: "Day 3 of 10 in Step 4",
       dayProgress: [3, 10],
       sessionNumber: 31,
