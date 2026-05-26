@@ -2,6 +2,8 @@
 
 A 14-week AI skills learning platform. Built as a design-to-code implementation using Vite + React + TypeScript.
 
+**Live demo:** https://ground-up-app-rouge.vercel.app/
+
 ## Screens
 
 | Screen | Description |
