@@ -492,6 +492,48 @@ function freshData(): ProgressData {
   };
 }
 
+/* ────────────── TODAY GENERATOR ────────────── */
+// Produces a minimal but coherent Today object for the first session of any
+// step. Used by advanceStep() in progress.tsx so the dashboard/lesson screens
+// show sensible content immediately after a checkpoint is passed.
+
+export function makeTodayForStep(s: Step): Today {
+  const isDay1Step = s.weekRange[0] === 0 && s.weekRange[1] === 0;
+  const totalWeeks = isDay1Step ? 1 : s.weekRange[1] - s.weekRange[0] + 1;
+  const totalDays = isDay1Step ? 1 : totalWeeks * 7;
+  const firstResource = s.resources[0];
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+  return {
+    step: s.n,
+    week: isDay1Step ? "Day 1" : s.weekRange[0],
+    weekOf: String(s.weekRange[0] || 1),
+    date: dateStr,
+    taskTitle: `Step ${s.n} — ${s.name} begins`,
+    source: firstResource?.name ?? s.primary.split("·")[0].trim(),
+    url: firstResource?.repo ? `https://${firstResource.repo}` : "#",
+    duration: isDay1Step ? "~1h" : "~1–2h",
+    expected: s.summary,
+    nextUp: `Continue ${s.name} — ${isDay1Step ? "tomorrow" : `Week ${s.weekRange[0]}`}.`,
+    dayLabel: `Day 1 of ${totalDays} in Step ${s.n}`,
+    dayProgress: [1, totalDays],
+    sessionNumber: 1,
+    tasks: [
+      `Read the Step ${s.n} overview and skim the primary resource: ${s.primary.split("·")[0].trim()}.`,
+      `Write a one-sentence goal for this step in your Obsidian vault before starting any material.`,
+    ],
+    experiment: {
+      title: `Step ${s.n} opens`,
+      sub: "first session",
+      body: s.summary,
+      cmd: firstResource ? `# Start with: ${firstResource.name}` : "",
+    },
+    noteTemplate: `## What I learned\n\n\n\n## What surprised me\n\n\n\n## Still unclear\n\n\n\n## Key terms\n\n`,
+    pastNotes: [],
+  };
+}
+
 /* ────────────── ONBOARDING OPTIONS ────────────── */
 
 export const ONBOARD = {

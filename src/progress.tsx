@@ -6,6 +6,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import {
   getProgress,
+  makeTodayForStep,
   type Mode,
   type ProgressData,
   type Step,
@@ -27,6 +28,8 @@ interface ProgressContextValue {
   skills: Skill[];
   persona: Persona;
   toggleCriterion: (stepN: number, id: string) => void;
+  /** Promote the current step to "passed" and unlock the next one. */
+  advanceStep: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
@@ -57,6 +60,26 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const advanceStep = () => {
+    setData((prev) => {
+      const currentIdx = prev.steps.findIndex((s) => s.state === "current");
+      if (currentIdx === -1) return prev;
+      const nextIdx = currentIdx + 1;
+      if (nextIdx >= prev.steps.length) return prev; // already on the last step
+      const newSteps = prev.steps.map((s, i) => {
+        if (i === currentIdx) return { ...s, state: "passed" as const };
+        if (i === nextIdx)    return { ...s, state: "current" as const };
+        return s;
+      });
+      return {
+        ...prev,
+        steps: newSteps,
+        today: makeTodayForStep(newSteps[nextIdx]),
+        streak: { ...prev.streak, notesTotal: prev.streak.notesTotal }, // preserve streak
+      };
+    });
+  };
+
   const value = useMemo<ProgressContextValue>(
     () => ({
       mode,
@@ -69,6 +92,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       skills: data.skills,
       persona: data.persona,
       toggleCriterion,
+      advanceStep,
     }),
     [mode, data],
   );

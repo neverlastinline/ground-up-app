@@ -271,7 +271,7 @@ const REVISIT: Record<number, Record<string, { where: string; url: string }>> = 
 
 /* PASSED state — celebratory full-screen card */
 export function CheckpointPassed({ onContinue }: { onContinue: () => void }) {
-  const { steps } = useProgress();
+  const { steps, advanceStep } = useProgress();
   const step = steps.find((s) => s.state === "current");
   const next = step ? step.n + 1 : 2;
   const nextStep = steps.find((s) => s.n === next);
@@ -303,7 +303,13 @@ export function CheckpointPassed({ onContinue }: { onContinue: () => void }) {
         </p>
         <hr className="hr-dash mt-6 mb-4" />
         <div className="row center gap-4" style={{ justifyContent: "center" }}>
-          <button className="btn btn--green btn--lg" onClick={onContinue}>
+          <button
+            className="btn btn--green btn--lg"
+            onClick={() => {
+              advanceStep(); // mark current step passed, unlock next
+              onContinue();  // navigate to dashboard
+            }}
+          >
             {nextStep ? (
               <>
                 Begin Step {next} — {nextStep.name} <ArrowRight size={13} color="#fff" />
