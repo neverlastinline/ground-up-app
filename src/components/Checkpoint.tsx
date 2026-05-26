@@ -134,19 +134,49 @@ export function Checkpoint({ onNavigate, onPassed }: { onNavigate: (s: Screen) =
   );
 }
 
-/* per-step "if you can't yet" hints */
+/* per-step "if you can't yet" hints — one entry per criterion, in order */
 const GUIDANCE: Record<number, string[]> = {
   1: [
     "Re-run the installer. If `python --version` doesn't return 3.11+, fix that before bed — every later step depends on it.",
-    "Open the four signup pages in tabs. They're free; the IBM one is audit mode. Don't optimise — just create the accounts.",
+    "Open both signup pages in tabs. anthropic.com/learn and platform.openai.com. They're free — just create the accounts.",
     "Make the vault, then drag the session-note template into /sessions/ and pin it. Five minutes max.",
     "Run `git init`, `git add .`, `git commit -m 'first commit'`, push to a new repo on github.com. The README is one sentence.",
   ],
+  2: [
+    "Read the Anthropic tokenisation explainer, then paste a paragraph into the tokeniser playground and count the chunks. Do it once and it sticks.",
+    "Watch 3Blue1Brown 'But what is a GPT?' with a notebook open. Pause at the attention matrix and sketch it yourself.",
+    "Open microsoft/generative-ai-for-beginners and work through Lessons 1–3. Each takes about 20 minutes. Note one thing per lesson.",
+    "Open Obsidian, create today's session note, and write three sentences under each of the four prompt headings before ticking this.",
+  ],
+  3: [
+    "Write 'gradient descent' on paper and draw the loss curve going down. If you can't, watch the 3Blue1Brown gradient descent video first.",
+    "Write the words 'logistic regression', 'random forest', 'k-means' and one sentence on each. If one is blank, that's the thing to study next.",
+    "Create the GitHub repo now — even an empty notebook with one cell is a commit. Push first, polish later.",
+    "Write four sentences: what the model does, the dataset, the metric result, and what you'd do differently. That's the entire README skeleton.",
+  ],
   4: [
-    "If you can't, go back to Karpathy Lecture 2 — micrograd — and re-derive ∂L/∂w for a single neuron on paper.",
-    "If your repo doesn't generate text yet, that's the lecture you finish next. The README must show one sample.",
-    "If unclear, watch Lecture 6 (attention) again with a notebook open. Implement scaled dot-product attention before ticking.",
+    "Go back to Karpathy Lecture 2 — micrograd — and re-derive ∂L/∂w for a single neuron on paper before ticking.",
+    "If your repo doesn't generate text yet, that's the lecture you finish next. The README must show one sample output.",
+    "Watch Lecture 6 (attention) again with a notebook open. Implement scaled dot-product attention before ticking.",
     "Run `ollama run llama3.2:3b` in a terminal. Ask it to explain backprop. Note one thing it says that you can refute.",
+  ],
+  5: [
+    "Read the Anthropic tool use docs and write a prompt that returns JSON with three specific fields. Test it. Then tick.",
+    "Run tiktoken on five different sentences and look at the token IDs. Notice how spaces and punctuation split. That's BPE.",
+    "Start with ChromaDB and 3 documents. Get retrieval working on that before adding your vault. Small first.",
+    "Push a README with: embedding model used, chunk size, retrieval strategy, and one limitation you found. Four sentences is enough.",
+  ],
+  6: [
+    "Read the Anthropic tool use guide end-to-end, then build a single-tool agent that looks up today's date. One tool, working, is the lesson.",
+    "Add a second tool — a calculator, a file-writer, or a search function. The pattern of chaining two tools is what this step is about.",
+    "Add a try/catch at the action step and log the error. The agent should degrade gracefully, not crash silently.",
+    "Record a 60-second screen recording (QuickTime or Loom) showing the agent completing one full workflow. That's the proof.",
+  ],
+  7: [
+    "Push to Hugging Face Spaces with Gradio first — it's the fastest path from local to public URL. Then update the README link.",
+    "Start with 5 test cases in DeepEval. Assert on hallucination and relevance. Add 5 more. 10 is the minimum credible eval suite.",
+    "Try prompt injection, jailbreaks, and out-of-distribution inputs on your own model. Document two failure modes and the mitigations.",
+    "Write the LinkedIn case study first (Problem → Approach → Result → Stack). The GitHub README follows the same shape.",
   ],
 };
 
@@ -164,6 +194,7 @@ function CriterionGuidance({ stepN, idx }: { stepN: number; idx: number }) {
 
 function PassPanel({ stepN, onAttempt, passing }: { stepN: number; onAttempt: () => void; passing: boolean }) {
   const next = stepN + 1;
+  const isFinal = stepN >= 7;
   return (
     <div className="card p-6" style={{ borderColor: "var(--green)", background: "var(--green-soft)" }}>
       <div className="row between center">
@@ -172,15 +203,18 @@ function PassPanel({ stepN, onAttempt, passing }: { stepN: number; onAttempt: ()
             All criteria ticked
           </div>
           <h2 className="h-section mt-2" style={{ color: "var(--green)" }}>
-            You're ready to claim Step {stepN}.
+            {isFinal ? "You've completed Ground Up." : `You're ready to claim Step ${stepN}.`}
           </h2>
           <div className="ink fz-13 mt-3" style={{ maxWidth: 540 }}>
-            Earned, not given. Step {next} unlocks immediately. You can still revisit Step {stepN} materials any time —
-            but tomorrow your dashboard wakes up in Step {next}.
+            {isFinal
+              ? "Deployed. Evaluated. Safety-checked. The portfolio works without you in the room. That's the whole course."
+              : `Earned, not given. Step ${next} unlocks immediately. You can still revisit Step ${stepN} materials any time — but tomorrow your dashboard wakes up in Step ${next}.`}
           </div>
         </div>
         <button className="btn btn--green btn--lg" onClick={onAttempt} disabled={passing}>
-          {passing ? `Step complete — unlocking Step ${next}…` : `Pass Step ${stepN} → unlock Step ${next}`}
+          {passing
+            ? isFinal ? "Course complete…" : `Step complete — unlocking Step ${next}…`
+            : isFinal ? "Complete the course →" : `Pass Step ${stepN} → unlock Step ${next}`}
         </button>
       </div>
     </div>
@@ -257,15 +291,45 @@ function FailPanel({
 const REVISIT: Record<number, Record<string, { where: string; url: string }>> = {
   1: {
     f1: { where: "python.org · code.visualstudio.com · obsidian.md · ollama.com", url: "https://python.org" },
-    f2: { where: "anthropic.com/learn · openai.com", url: "https://anthropic.com/learn" },
+    f2: { where: "anthropic.com/learn · platform.openai.com", url: "https://anthropic.com/learn" },
     f3: { where: "obsidian.md · vault structure docs", url: "https://help.obsidian.md" },
     f4: { where: "github.com · new repository", url: "https://github.com/new" },
+  },
+  2: {
+    s2c1: { where: "Anthropic tokenisation docs · Tiktokenizer playground", url: "https://tiktokenizer.vercel.app" },
+    s2c2: { where: "3Blue1Brown 'But what is a GPT?' · Anthropic AI Fluency", url: "https://www.youtube.com/watch?v=wjZofJX0v4M" },
+    s2c3: { where: "microsoft/generative-ai-for-beginners · Lessons 1–3", url: "https://github.com/microsoft/generative-ai-for-beginners" },
+    s2c4: { where: "anthropic.com/learn · AI Fluency Framework", url: "https://anthropic.com/learn" },
+  },
+  3: {
+    s3c1: { where: "fast.ai Lesson 2 · 3Blue1Brown 'Gradient descent, how neural networks learn'", url: "https://course.fast.ai" },
+    s3c2: { where: "microsoft/ML-For-Beginners · Lessons 5–8", url: "https://github.com/microsoft/ML-For-Beginners" },
+    s3c3: { where: "Kaggle Titanic competition · microsoft/ML-For-Beginners projects", url: "https://kaggle.com/competitions/titanic" },
+    s3c4: { where: "GitHub Docs · README best practices", url: "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes" },
   },
   4: {
     c1: { where: "karpathy/nn-zero-to-hero · Lecture 2 — micrograd", url: "https://github.com/karpathy/nn-zero-to-hero" },
     c2: { where: "karpathy/nn-zero-to-hero · Lecture 7 — Let's build GPT", url: "https://github.com/karpathy/nn-zero-to-hero" },
     c3: { where: "karpathy/nn-zero-to-hero · Lecture 6 — attention", url: "https://github.com/karpathy/nn-zero-to-hero" },
-    c4: { where: "ollama · ollama run llama3.2:3b", url: "https://ollama.com" },
+    c4: { where: "ollama.com · ollama run llama3.2:3b", url: "https://ollama.com" },
+  },
+  5: {
+    s5c1: { where: "Anthropic Prompt Engineering Guide · tool use docs", url: "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" },
+    s5c2: { where: "Tiktokenizer playground · mlabonne tokenisation chapter", url: "https://tiktokenizer.vercel.app" },
+    s5c3: { where: "ChromaDB docs · getting started", url: "https://docs.trychroma.com/getting-started" },
+    s5c4: { where: "github.com · your RAG project repo", url: "https://github.com" },
+  },
+  6: {
+    s6c1: { where: "Anthropic tool use guide · microsoft/ai-agents-for-beginners", url: "https://docs.anthropic.com/en/docs/build-with-claude/tool-use" },
+    s6c2: { where: "Anthropic Cookbook · multi-tool agent example", url: "https://github.com/anthropics/anthropic-cookbook" },
+    s6c3: { where: "LangGraph docs · error handling patterns", url: "https://langchain-ai.github.io/langgraph/" },
+    s6c4: { where: "Loom · QuickTime screen recording (Shift+Cmd+5)", url: "https://loom.com" },
+  },
+  7: {
+    s7c1: { where: "Hugging Face Spaces · Gradio quickstart", url: "https://huggingface.co/docs/hub/spaces-sdks-gradio" },
+    s7c2: { where: "DeepEval docs · getting started", url: "https://docs.confident-ai.com/docs/getting-started" },
+    s7c3: { where: "Anthropic red-teaming guide · Constitutional AI paper", url: "https://www.anthropic.com/research/red-teaming-language-models-to-reduce-harms" },
+    s7c4: { where: "GitHub profile README guide · linkedin.com/in/edit", url: "https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme" },
   },
 };
 

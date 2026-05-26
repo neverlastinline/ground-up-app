@@ -289,13 +289,15 @@ function demoData(): ProgressData {
       if (s.n <= 3) state = "passed";
       if (s.n === 4) state = "current";
       const out: Step = { ...s, state };
+      // All steps get criteria; passed steps are fully ticked, current step is partially ticked
+      if (s.n <= 3) {
+        out.checkpointCriteria = buildCriteria(s.n).map((c) => ({ ...c, done: true }));
+      }
       if (s.n === 4) {
-        out.checkpointCriteria = [
-          { id: "c1", text: "I can derive backpropagation on paper for a two-layer net.",        done: true  },
-          { id: "c2", text: "My nanoGPT-from-scratch repo trains and generates Shakespeare-like text.", done: true  },
-          { id: "c3", text: "I can describe self-attention without looking it up.",              done: false },
-          { id: "c4", text: "I have run llama3.2:3b locally with Ollama and read its output.",   done: false },
-        ];
+        out.checkpointCriteria = buildCriteria(4).map((c) => ({
+          ...c,
+          done: c.id === "c1" || c.id === "c2", // first two ticked in demo
+        }));
       }
       return out;
     }),
@@ -373,12 +375,7 @@ function freshData(): ProgressData {
       if (s.n === 1) state = "current";
       const out: Step = { ...s, state };
       if (s.n === 1) {
-        out.checkpointCriteria = [
-          { id: "f1", text: "Python 3.11+, VS Code, Git, Obsidian and Ollama are installed locally.",   done: false },
-          { id: "f2", text: "I created accounts on Anthropic Academy and OpenAI Academy.", done: false },
-          { id: "f3", text: "My Obsidian AI-Learning vault exists with /sessions, /concepts, /projects.",      done: false },
-          { id: "f4", text: "I pushed an initial commit to a public GitHub repo named ground-up.",             done: false },
-        ];
+        out.checkpointCriteria = buildCriteria(1);
       }
       return out;
     }),
@@ -489,6 +486,63 @@ function freshData(): ProgressData {
     ],
     persona: { name: "You", initials: "YO", age: null, role: "Day 1 · environment setup" },
   };
+}
+
+/* ────────────── CHECKPOINT CRITERIA ────────────── */
+// All pass criteria for every step. Stored as { id, text } — the `done`
+// boolean is runtime state added by freshData(), demoData(), and advanceStep().
+// IDs are stable so criteria-toggle state keys never collide across steps.
+
+export type CriterionDef = { id: string; text: string };
+
+export const STEP_CRITERIA: Record<number, CriterionDef[]> = {
+  1: [
+    { id: "f1", text: "Python 3.11+, VS Code, Git, Obsidian and Ollama are installed locally." },
+    { id: "f2", text: "I created accounts on Anthropic Academy and OpenAI Academy." },
+    { id: "f3", text: "My Obsidian AI-Learning vault exists with /sessions, /concepts, /projects." },
+    { id: "f4", text: "I pushed an initial commit to a public GitHub repo named ground-up." },
+  ],
+  2: [
+    { id: "s2c1", text: "I can explain what a token is and why token limits affect how I write prompts." },
+    { id: "s2c2", text: "I can describe, in plain English, how a transformer processes text — attention, embeddings, next-token prediction." },
+    { id: "s2c3", text: "I have worked through at least 3 notebooks in microsoft/generative-ai-for-beginners and noted what each demonstrated." },
+    { id: "s2c4", text: "I have completed Anthropic AI Fluency and written a session note defining LLM, transformer, and prompt in my own words." },
+  ],
+  3: [
+    { id: "s3c1", text: "I can explain gradient descent, a loss function, and what overfitting looks like — without referring to notes." },
+    { id: "s3c2", text: "I can describe the difference between classification and regression, and name one algorithm for each." },
+    { id: "s3c3", text: "I have trained a logistic regression or random forest model on a real dataset and the code is on GitHub." },
+    { id: "s3c4", text: "My first project README explains what the model does, the dataset, the result, and one thing I'd do differently." },
+  ],
+  4: [
+    { id: "c1", text: "I can derive backpropagation on paper for a two-layer net." },
+    { id: "c2", text: "My nanoGPT-from-scratch repo trains and generates Shakespeare-like text." },
+    { id: "c3", text: "I can describe self-attention without looking it up." },
+    { id: "c4", text: "I have run llama3.2:3b locally with Ollama and read its output." },
+  ],
+  5: [
+    { id: "s5c1", text: "I can write a multi-shot prompt that reliably produces structured JSON output from Claude." },
+    { id: "s5c2", text: "I understand BPE tokenisation well enough to predict roughly how a sentence will tokenise." },
+    { id: "s5c3", text: "I have built a RAG pipeline over at least 10 of my own Obsidian notes and can query it in the terminal." },
+    { id: "s5c4", text: "My RAG project is on GitHub with a README that explains the retrieval strategy and one limitation I found." },
+  ],
+  6: [
+    { id: "s6c1", text: "I can explain the difference between tool use and multi-agent orchestration, with a concrete example of each." },
+    { id: "s6c2", text: "I have built an agent with at least two tools — one that reads data and one that takes an action." },
+    { id: "s6c3", text: "My agent handles a multi-step workflow (plan → retrieve → act → summarise) without crashing on common edge cases." },
+    { id: "s6c4", text: "My agent project is on GitHub with a working MCP or LangGraph config, and I can demo it in 60 seconds." },
+  ],
+  7: [
+    { id: "s7c1", text: "My capstone project is deployed on Hugging Face Spaces or Vercel and accessible via a public URL." },
+    { id: "s7c2", text: "I have written at least 10 evaluation cases using DeepEval or RAGAS and the results are committed to my repo." },
+    { id: "s7c3", text: "I have red-teamed my own model — found at least two failure modes and documented mitigations in the README." },
+    { id: "s7c4", text: "My GitHub profile and one LinkedIn case study together tell a coherent story of the Ground Up journey." },
+  ],
+};
+
+/** Build CheckpointCriteria from the definition list, all unticked by default. */
+export function buildCriteria(stepN: number): CheckpointCriterion[] {
+  return (STEP_CRITERIA[stepN] ?? []).map((d) => ({ ...d, done: false }));
 }
 
 /* ────────────── TODAY GENERATOR ────────────── */

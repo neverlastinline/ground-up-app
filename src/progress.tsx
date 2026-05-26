@@ -7,6 +7,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import {
   getProgress,
   makeTodayForStep,
+  buildCriteria,
   type Mode,
   type ProgressData,
   type Step,
@@ -68,7 +69,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       if (nextIdx >= prev.steps.length) return prev; // already on the last step
       const newSteps = prev.steps.map((s, i) => {
         if (i === currentIdx) return { ...s, state: "passed" as const };
-        if (i === nextIdx)    return { ...s, state: "current" as const };
+        if (i === nextIdx)    return { ...s, state: "current" as const, checkpointCriteria: buildCriteria(s.n) };
         return s;
       });
       return {
